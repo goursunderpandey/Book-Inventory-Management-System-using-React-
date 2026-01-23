@@ -27,8 +27,22 @@ export const BookProvider = ({ children }) => {
         ]);
     };
 
+    const deleteBook = (id) => {
+        setBooks((prev) => prev.filter((book) => book.number !== id));
+      };
+
+
+      const updateBook = (updatedBook) => {
+        setBooks((prev) =>
+          prev.map((b) =>
+            b.number === updatedBook.number ? updatedBook : b
+          )
+        );
+      };
+      
+
     return (
-        <Bookcontext.Provider value={{ books, addBook }}>
+        <Bookcontext.Provider value={{ books, addBook ,deleteBook,updateBook}}>
             {children}
         </Bookcontext.Provider>
     );
