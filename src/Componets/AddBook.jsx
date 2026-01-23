@@ -1,10 +1,13 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Bookcontext } from "../context/bookcontext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function AddBook() {
-  const { addBook, books } = useContext(Bookcontext);
+  const { addBook, updateBook, books } = useContext(Bookcontext);
   const navigate = useNavigate();
+  const { id } = useParams();
+
+  const isEdit = Boolean(id);
 
   const [form, setForm] = useState({
     number: "",
@@ -16,33 +19,46 @@ export default function AddBook() {
     cover: "",
   });
 
+
+  useEffect(() => {
+    if (isEdit) {
+      const book = books.find((b) => b.number == id);
+      if (book) {
+
+        setForm(book);
+      }
+    }
+  }, [id, books, isEdit]);
+
   const handleChange = (e) => {
-    let { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!form.title || !form.pages || isNaN(form.pages)) {
-      alert("Please fill Title and valid Pages");
+    if (!form.title || isNaN(form.pages)) {
+      alert("Invalid data");
       return;
     }
 
-    if (books.find((el) => el.number === Number(form.number))) {
-      alert("Number for books already exists");
-      return;
-    }
+    if (isEdit) {
+      updateBook({
+        ...form,
+        pages: Number(form.pages),
+      });
+    } else {
+      if (books.find((b) => b.number === Number(form.number))) {
+        alert("Book number already exists");
+        return;
+      }
 
-    addBook({
-      number: Number(form.number),
-      title: form.title,
-      originalTitle: form.originalTitle,
-      releaseDate: form.releaseDate,
-      description: form.description,
-      pages: Number(form.pages),
-      cover: form.cover,
-    });
+      addBook({
+        ...form,
+        number: Number(form.number),
+        pages: Number(form.pages),
+      });
+    }
 
     navigate("/");
   };
@@ -50,95 +66,77 @@ export default function AddBook() {
   return (
     <div className="container my-5">
       <div className="row justify-content-center">
-        <div className="col-12 col-md-8 col-lg-6">
+        <div className="col-md-8 col-lg-6">
           <div className="card shadow p-4">
-            <h3 className="text-primary mb-4">Add New Book</h3>
+            <h3 className="text-primary mb-4">
+              {isEdit ? "Edit Book" : "Add New Book"}
+            </h3>
 
             <form onSubmit={handleSubmit}>
-              <div className="mb-3">
+              {!isEdit && (
                 <input
-                  type="number"
+                  className="form-control mb-3"
                   name="number"
-                  className="form-control"
-                  placeholder="Book Number / ID"
+                  placeholder="Book Number"
                   value={form.number}
                   onChange={handleChange}
                   required
                 />
-              </div>
+              )}
 
-              <div className="mb-3">
-                <input
-                  type="text"
-                  name="title"
-                  className="form-control"
-                  placeholder="Title"
-                  value={form.title}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <input
+                className="form-control mb-3"
+                name="title"
+                placeholder="Title"
+                value={form.title}
+                onChange={handleChange}
+                required
+              />
 
-              <div className="mb-3">
-                <input
-                  type="text"
-                  name="originalTitle"
-                  className="form-control"
-                  placeholder="Original Title"
-                  value={form.originalTitle}
-                  onChange={handleChange}
-                />
-              </div>
+              <input
+                className="form-control mb-3"
+                name="originalTitle"
+                placeholder="Original Title"
+                value={form.originalTitle}
+                onChange={handleChange}
+              />
 
-              <div className="mb-3">
-                <input
-                  type="date"
-                  name="releaseDate"
-                  className="form-control"
-                  value={form.releaseDate}
-                  onChange={handleChange}
-                />
-              </div>
+              <input
+                type="date"
+                className="form-control mb-3"
+                name="releaseDate"
+                value={form.releaseDate}
+                onChange={handleChange}
+              />
 
-              <div className="mb-3">
-                <input
-                  type="number"
-                  name="pages"
-                  className="form-control"
-                  placeholder="Pages"
-                  value={form.pages}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <input
+                className="form-control mb-3"
+                name="pages"
+                placeholder="Pages"
+                value={form.pages}
+                onChange={handleChange}
+                required
+              />
 
-              <div className="mb-3">
-                <input
-                  type="text"
-                  name="cover"
-                  className="form-control"
-                  placeholder="Cover Image URL"
-                  value={form.cover}
-                  onChange={handleChange}
-                />
-              </div>
+              <input
+                className="form-control mb-3"
+                name="cover"
+                placeholder="Cover URL"
+                value={form.cover}
+                onChange={handleChange}
+              />
 
-              <div className="mb-3">
-                <textarea
-                  name="description"
-                  className="form-control"
-                  placeholder="Description"
-                  value={form.description}
-                  onChange={handleChange}
-                  rows="5"
-                ></textarea>
-              </div>
+              <textarea
+                className="form-control mb-3"
+                name="description"
+                rows="4"
+                placeholder="Description"
+                value={form.description}
+                onChange={handleChange}
+              />
 
-              <button
-                type="submit"
-                className="btn btn-primary w-100"
-              >
-                Add Book
+              <button className="btn btn-primary w-100">
+                {isEdit ? "Update Book" : "Add Book"}
               </button>
             </form>
           </div>
